@@ -3,7 +3,18 @@ import { GoogleGenAI } from '@google/genai';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { motion } from 'motion/react';
-import { Sparkles, Briefcase, Target, Clock, AlertCircle, Building2, Users, Coins, Heart, Send, Loader2, Key, HelpCircle, X } from 'lucide-react';
+import { Sparkles, Briefcase, Target, Clock, AlertCircle, Building2, Users, Coins, Heart, Send, Loader2, Key, HelpCircle, X, History, CircleDollarSign } from 'lucide-react';
+
+// Patch Notes Data
+const PATCH_NOTES = [
+  { version: 'v1.6.0', date: '2026.04.19', content: '운영 정보 강화: 패치노트 시스템 구축 및 예상 API 사용 비용 안내 추가' },
+  { version: 'v1.5.0', date: '2026.03.28', content: '공유성 개선: 링크 공유 시 SEO 최적화 및 메타 태그(OG Tag) 반영' },
+  { version: 'v1.4.0', date: '2026.03.28', content: '범용성 확대: 외부 웹 배포 시 커스텀 API Key 직접 입력 및 저장 기능 추가' },
+  { version: 'v1.3.0', date: '2026.03.28', content: '도움말 창 추가: 사용자 가이드(사용방법) 모달 구현' },
+  { version: 'v1.2.0', date: '2026.03.16', content: '시각적 편의성 개선: 상단 히어로 이미지 추가 및 AI Studio API Key 연동 기능 구현' },
+  { version: 'v1.1.0', date: '2026.03.16', content: '개인용 개편: 직원(개인) 관점으로 프로젝트 전면 개편' },
+  { version: 'v1.0.0', date: '2026.03.16', content: '서비스 런칭: 혁신 직무역량 강화 AI 초기 빌드 배포' },
+];
 
 // Initialize Gemini API is deferred to handleSubmit to support dynamic API keys
 
@@ -23,6 +34,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isHowToUseOpen, setIsHowToUseOpen] = useState(false);
+  const [isPatchNotesOpen, setIsPatchNotesOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('GEMINI_API_KEY') || '');
 
@@ -102,16 +114,29 @@ export default function App() {
               <p className="text-sm text-zinc-400">개인의 잠재력을 극대화하는 맞춤형 커리어 로드맵</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsHowToUseOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-medium rounded-lg border border-zinc-700 transition-colors"
-            >
-              <HelpCircle className="w-4 h-4" />
-              사용방법
-            </button>
-            <button
-              onClick={async () => {
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-200/70">
+              <CircleDollarSign className="w-3.5 h-3.5 text-amber-500" />
+              <span>예상 비용(1회): ₩10 ~ ₩150 (결과물에 따라 오차 발생 가능)</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsPatchNotesOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-medium rounded-lg border border-zinc-700 transition-colors"
+                title="업데이트 내역"
+              >
+                <History className="w-4 h-4" />
+                패치노트
+              </button>
+              <button
+                onClick={() => setIsHowToUseOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-medium rounded-lg border border-zinc-700 transition-colors"
+              >
+                <HelpCircle className="w-4 h-4" />
+                사용방법
+              </button>
+              <button
+                onClick={async () => {
                 if ((window as any).aistudio?.openSelectKey) {
                   await (window as any).aistudio.openSelectKey();
                 } else {
@@ -129,7 +154,8 @@ export default function App() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         {/* Hero Image Section */}
@@ -370,6 +396,50 @@ export default function App() {
               <button
                 onClick={() => setIsHowToUseOpen(false)}
                 className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-lg transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Patch Notes Modal */}
+      {isPatchNotesOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative"
+          >
+            <button
+              onClick={() => setIsPatchNotesOpen(false)}
+              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <History className="w-5 h-5 text-red-500" />
+              업데이트 패치노트
+            </h3>
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              {PATCH_NOTES.map((note, idx) => (
+                <div key={idx} className="relative pl-6 pb-6 border-l border-zinc-800 last:pb-0">
+                  <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
+                  <div className="flex items-baseline justify-between mb-2">
+                    <span className="text-lg font-bold text-white leading-none">{note.version}</span>
+                    <span className="text-xs text-zinc-500 font-mono">{note.date}</span>
+                  </div>
+                  <p className="text-sm text-zinc-400 leading-relaxed">
+                    {note.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setIsPatchNotesOpen(false)}
+                className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
               >
                 닫기
               </button>
